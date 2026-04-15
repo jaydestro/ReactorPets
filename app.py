@@ -4,6 +4,7 @@ import json
 import queue
 from datetime import datetime
 
+import requests as http_requests
 from flask import (
     Flask, render_template, request, redirect, url_for,
     flash, Response, jsonify, stream_with_context,
@@ -391,6 +392,101 @@ def advance_status(app_id):
         q.put(update)
 
     return jsonify(status=new_status, timeline=a["timeline"])
+
+
+# ---------------------------------------------------------------------------
+# AI Chatbot (Ollama)
+# ---------------------------------------------------------------------------
+OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen2.5:0.5b")
+
+
+def _build_pet_context():
+    """Build a live data summary from Cosmos DB for the chatbot."""
+    all_pets = cosmos_db.list_pets()
+    available = [p for p in all_pets if p.get("status") == "available"]
+    pending = [p for p in all_pets if p.get("status") == "pending"]
+    adopted = [p for p in all_pets if p.get("status") == "adopted"]
+
+    lines = [
+        f"Total pets: {len(all_pets)} "
+        f"(available: {len(available)}, pending: {len(pending)}, adopted: {len(adopted)})",
+        "",
+        "Available pets:",
+    ]
+    for p in available:
+        lines.append(
+            f"- {p['name']} (ID: {p['id']}): {p.get('species','?')} / "
+            f"{p.get('breed','?')}, age {p.get('age','?')}, "
+            f"location: {p.get('location','?')}. {p.get('description','')}"
+        )
+    if pending:
+        lines.append("")
+        lines.append("Pets with pending applications:")
+        for p in pending:
+            lines.append(
+                f"- {p['name']} (ID: {p['id']}): {p.get('species','?')} / "
+                f"{p.get('breed','?')}"
+            )
+    if adopted:
+        lines.append("")
+        lines.append("Recently adopted:")
+        for p in adopted:
+            lines.append(f"- {p['name']} ({p.get('species','?')})")
+
+    return "\n".join(lines)
+
+
+SYSTEM_PROMPT = """You are the ReactorPets adoption assistant. You help people find pets to adopt and answer questions about the adoption process.
+
+Here is our adoption process:
+1. Browse available pets on our website
+2. Create an account or log in
+3. Click "Apply to Adopt" on a pet's page
+4. Fill out the adoption application form
+5. Track your application status in real time (Submitted → Under Review → Home Check Scheduled → Approved)
+
+Here is the current live data from our database:
+{pet_context}
+
+Rules:
+- Only recommend pets that are currently available
+- Be friendly, helpful, and concise
+- If asked about a specific pet, provide details from the data above
+- If a pet has a pending application, mention it's currently being reviewed
+- Do not make up pets or information not in the data"""
+
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    user_message = request.json.get("message", "").strip()
+    if not user_message:
+        return jsonify(error="Message is required."), 400
+
+    pet_context = _build_pet_context()
+    system = SYSTEM_PROMPT.format(pet_context=pet_context)
+
+    try:
+        resp = http_requests.post(
+            f"{OLLAMA_URL}/api/chat",
+            json={
+                "model": OLLAMA_MODEL,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user_message},
+                ],
+                "stream": False,
+            },
+            timeout=60,
+        )
+        resp.raise_for_status()
+        answer = resp.json()["message"]["content"]
+    except http_requests.ConnectionError:
+        answer = "Sorry, the AI assistant is offline. Please make sure Ollama is running."
+    except Exception as e:
+        answer = f"Sorry, I couldn't process that request. ({type(e).__name__})"
+
+    return jsonify(reply=answer)
 
 
 if __name__ == "__main__":
