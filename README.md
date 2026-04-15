@@ -78,6 +78,10 @@ ReactorPets/
 └── templates/          # Jinja2 templates (base, index, detail, apply, etc.)
 ```
 
+## Resources
+
+- [Azure Cosmos DB Vibe Coding Cheat Sheet](https://gist.github.com/jaydestro/29982ecce186b3e996787c83aee1c844)
+
 ## License
 
 Demo app — use however you like.
