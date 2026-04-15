@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2 style="margin-bottom:1rem;">{{ pet.name }}</h2>
+  <div class="detail-row"><strong>Species:</strong> {{ pet.species }}</div>
+  <div class="detail-row"><strong>Breed:</strong> {{ pet.breed or '—' }}</div>
+  <div class="detail-row"><strong>Age:</strong> {{ pet.age or '—' }}</div>
+  <div class="actions">
+    <a href="/pets/{{ pet.id }}/edit" class="btn btn-primary">Edit</a>
+    <form action="/pets/{{ pet.id }}/delete" method="POST" onsubmit="return confirm('Delete this pet?');">
+      <button class="btn btn-danger" type="submit">Delete</button>
+    </form>
+    <a href="/" class="btn btn-secondary">Back</a>
+  </div>
+</div>
+{% endblock %}

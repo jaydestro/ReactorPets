@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 style="margin-bottom:1rem;">All Pets</h2>
+{% if pets %}
+<table>
+  <thead>
+    <tr><th>Name</th><th>Species</th><th>Breed</th><th>Age</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for id, pet in pets.items() %}
+    <tr>
+      <td><a href="/pets/{{ id }}">{{ pet.name }}</a></td>
+      <td>{{ pet.species }}</td>
+      <td>{{ pet.breed or '—' }}</td>
+      <td>{{ pet.age or '—' }}</td>
+      <td>
+        <a href="/pets/{{ id }}/edit" class="btn btn-secondary" style="padding:0.3rem 0.6rem;font-size:0.8rem;">Edit</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">
+  <p>No pets yet. <a href="/pets/new">Add one!</a></p>
+</div>
+{% endif %}
+{% endblock %}
