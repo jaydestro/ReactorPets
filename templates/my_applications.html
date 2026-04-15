@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 style="margin-bottom:1rem">📋 My Applications</h2>
+{% if applications %}
+  {% for id, app in applications.items() %}
+  <a href="/applications/{{ id }}" class="card" style="text-decoration:none;color:inherit;display:block;margin-bottom:1rem">
+    <div class="card-body" style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <h3>{{ app.pet_name }}</h3>
+        <p style="color:#666;font-size:0.85rem">Submitted {{ app.submitted_at }}</p>
+      </div>
+      <span class="badge badge-{{ 'available' if app.status == 'Approved' else 'pending' }}">
+        {{ app.status }}
+      </span>
+    </div>
+  </a>
+  {% endfor %}
+{% else %}
+<div class="empty">
+  <p style="font-size:1.5rem;margin-bottom:0.5rem">📋</p>
+  <p>No applications yet. <a href="/">Browse pets</a> to find your match!</p>
+</div>
+{% endif %}
+{% endblock %}

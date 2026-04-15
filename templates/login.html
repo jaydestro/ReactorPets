@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="auth-card">
+  <h2 style="text-align:center;margin-bottom:1.5rem">🐾 Login</h2>
+  <p style="text-align:center;color:#888;margin-bottom:1rem;font-size:0.85rem">
+    Demo mode: any username/password will auto-create an account
+  </p>
+  <form method="POST">
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" required autofocus>
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required>
+    </div>
+    <button type="submit" class="btn btn-primary" style="width:100%">Login</button>
+  </form>
+  <p style="text-align:center;margin-top:1rem;font-size:0.9rem">
+    Want a full profile? <a href="/register">Register instead</a>
+  </p>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width:650px;margin:0 auto">
+  <div class="card-body">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <h2>Application for {{ application.pet_name }}</h2>
+      <span class="badge badge-{{ 'available' if application.status == 'Approved' else 'pending' }}" id="status-badge">
+        {{ application.status }}
+      </span>
+    </div>
+
+    <!-- Status progress bar -->
+    <div class="status-bar" id="status-bar">
+      {% set steps = ["Submitted", "Under Review", "Home Check Scheduled", "Approved"] %}
+      {% set current_idx = steps.index(application.status) if application.status in steps else 0 %}
+      {% for step in steps %}
+        <div class="status-step {{ 'done' if loop.index0 < current_idx else 'current' if loop.index0 == current_idx else '' }}"
+             data-step="{{ step }}">
+          {{ step }}
+        </div>
+      {% endfor %}
+    </div>
+
+    <h3 style="margin:1.5rem 0 0.5rem">Timeline</h3>
+    <div class="timeline" id="timeline">
+      {% for event in application.timeline|reverse %}
+      <div class="timeline-item {{ 'active' if loop.first else '' }}">
+        <strong>{{ event.status }}</strong>
+        <div class="time">{{ event.time }}</div>
+        {% if event.note %}<p style="font-size:0.9rem;color:#555;margin-top:0.25rem">{{ event.note }}</p>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if application.status != 'Approved' %}
+    <div style="margin-top:1.5rem;padding:1rem;background:#f8f9fa;border-radius:6px;text-align:center">
+      <p style="color:#666;font-size:0.85rem;margin-bottom:0.5rem">Demo: advance the status to see realtime updates</p>
+      <button class="btn btn-primary btn-sm" id="advance-btn" onclick="advanceStatus()">
+        ⏩ Advance Status
+      </button>
+    </div>
+    {% endif %}
+
+    <div class="actions">
+      <a href="/my-applications" class="btn btn-secondary">← Back to Applications</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const appId = "{{ application.id }}";
+const steps = ["Submitted", "Under Review", "Home Check Scheduled", "Approved"];
+
+// SSE: listen for realtime updates
+const evtSource = new EventSource(`/applications/${appId}/stream`);
+evtSource.onmessage = function(e) {
+  const data = JSON.parse(e.data);
+  // Update badge
+  const badge = document.getElementById('status-badge');
+  badge.textContent = data.status;
+  // Update progress bar
+  const idx = steps.indexOf(data.status);
+  document.querySelectorAll('.status-step').forEach((el, i) => {
+    el.className = 'status-step' + (i < idx ? ' done' : i === idx ? ' current' : '');
+  });
+  // Rebuild timeline
+  const tl = document.getElementById('timeline');
+  tl.innerHTML = '';
+  [...data.timeline].reverse().forEach((ev, i) => {
+    const div = document.createElement('div');
+    div.className = 'timeline-item' + (i === 0 ? ' active' : '');
+    div.innerHTML = `<strong>${ev.status}</strong><div class="time">${ev.time}</div>` +
+      (ev.note ? `<p style="font-size:0.9rem;color:#555;margin-top:0.25rem">${ev.note}</p>` : '');
+    tl.appendChild(div);
+  });
+  // Hide advance button if approved
+  if (data.status === 'Approved') {
+    const btn = document.getElementById('advance-btn');
+    if (btn) btn.closest('div').style.display = 'none';
+  }
+};
+
+function advanceStatus() {
+  fetch(`/applications/${appId}/advance`, { method: 'POST' })
+    .then(r => r.json())
+    .then(data => { if (data.error) alert(data.error); });
+}
+</script>
+{% endblock %}

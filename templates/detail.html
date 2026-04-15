@@ -1,16 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card">
-  <h2 style="margin-bottom:1rem;">{{ pet.name }}</h2>
-  <div class="detail-row"><strong>Species:</strong> {{ pet.species }}</div>
-  <div class="detail-row"><strong>Breed:</strong> {{ pet.breed or '—' }}</div>
-  <div class="detail-row"><strong>Age:</strong> {{ pet.age or '—' }}</div>
-  <div class="actions">
-    <a href="/pets/{{ pet.id }}/edit" class="btn btn-primary">Edit</a>
-    <form action="/pets/{{ pet.id }}/delete" method="POST" onsubmit="return confirm('Delete this pet?');">
-      <button class="btn btn-danger" type="submit">Delete</button>
-    </form>
-    <a href="/" class="btn btn-secondary">Back</a>
+<div class="card" style="max-width:600px;margin:0 auto">
+  <div class="pet-emoji">{{ emoji.get(pet.species, '🐾') }}</div>
+  <div class="card-body">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <h2>{{ pet.name }}</h2>
+      <span class="badge badge-{{ pet.status }}">{{ pet.status }}</span>
+    </div>
+    <div class="detail-row"><strong>Species:</strong> {{ pet.species }}</div>
+    <div class="detail-row"><strong>Breed:</strong> {{ pet.breed or '—' }}</div>
+    <div class="detail-row"><strong>Age:</strong> {{ pet.age or '—' }}</div>
+    {% if pet.description %}
+    <p style="margin-top:1rem;color:#555">{{ pet.description }}</p>
+    {% endif %}
+    <div class="actions">
+      {% if pet.status == 'available' %}
+        {% if current_user.is_authenticated %}
+          {% if already_applied %}
+            <span class="btn btn-secondary" style="cursor:default">Already Applied</span>
+          {% else %}
+            <a href="/pets/{{ pet.id }}/apply" class="btn btn-success">🐾 Apply to Adopt</a>
+          {% endif %}
+        {% else %}
+          <a href="/login?next=/pets/{{ pet.id }}/apply" class="btn btn-primary">Login to Apply</a>
+        {% endif %}
+      {% elif pet.status == 'adopted' %}
+        <span class="btn btn-secondary" style="cursor:default">Adopted! 🎉</span>
+      {% else %}
+        <span class="btn btn-secondary" style="cursor:default">Application Pending</span>
+      {% endif %}
+      <a href="/" class="btn btn-secondary">Back</a>
+    </div>
   </div>
 </div>
 {% endblock %}

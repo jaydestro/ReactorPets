@@ -1,28 +1,32 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 style="margin-bottom:1rem;">All Pets</h2>
+<div style="text-align:center;margin-bottom:2rem">
+  <h2>Find Your New Best Friend</h2>
+  <p style="color:#666;margin-top:0.5rem">Browse our adorable pets waiting for a forever home</p>
+</div>
 {% if pets %}
-<table>
-  <thead>
-    <tr><th>Name</th><th>Species</th><th>Breed</th><th>Age</th><th></th></tr>
-  </thead>
-  <tbody>
-    {% for id, pet in pets.items() %}
-    <tr>
-      <td><a href="/pets/{{ id }}">{{ pet.name }}</a></td>
-      <td>{{ pet.species }}</td>
-      <td>{{ pet.breed or '—' }}</td>
-      <td>{{ pet.age or '—' }}</td>
-      <td>
-        <a href="/pets/{{ id }}/edit" class="btn btn-secondary" style="padding:0.3rem 0.6rem;font-size:0.8rem;">Edit</a>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="grid">
+  {% for id, pet in pets.items() %}
+  <a href="/pets/{{ id }}" class="card" style="text-decoration:none;color:inherit">
+    <div class="pet-emoji">{{ emoji.get(pet.species, '🐾') }}</div>
+    <div class="card-body">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+        <h3>{{ pet.name }}</h3>
+        <span class="badge badge-{{ pet.status }}">{{ pet.status }}</span>
+      </div>
+      <p style="color:#666;font-size:0.9rem">{{ pet.species }} · {{ pet.breed }}</p>
+      <p style="color:#888;font-size:0.85rem;margin-top:0.25rem">Age: {{ pet.age }}</p>
+      {% if pet.description %}
+      <p style="font-size:0.85rem;margin-top:0.5rem;color:#555">{{ pet.description[:80] }}{% if pet.description|length > 80 %}…{% endif %}</p>
+      {% endif %}
+    </div>
+  </a>
+  {% endfor %}
+</div>
 {% else %}
 <div class="empty">
-  <p>No pets yet. <a href="/pets/new">Add one!</a></p>
+  <p style="font-size:1.5rem;margin-bottom:0.5rem">🐾</p>
+  <p>No pets available right now. Check back soon!</p>
 </div>
 {% endif %}
 {% endblock %}
