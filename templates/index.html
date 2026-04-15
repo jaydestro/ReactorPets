@@ -7,8 +7,35 @@
 {% if pets %}
 <div class="grid">
   {% for id, pet in pets.items() %}
+  {% set app = user_apps.get(id) if user_apps else None %}
+  {% if app %}
+  <div class="card" style="color:inherit">
+    <a href="/pets/{{ id }}" style="text-decoration:none;color:inherit">
+      <div style="text-align:center;padding:1rem;background:#f8f9fa">
+        <img src="/static/images/{{ images.get(pet.species, 'dog.svg') }}" alt="{{ pet.species }}" style="width:120px;height:120px">
+      </div>
+      <div class="card-body" style="padding-bottom:0.25rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+          <h3>{{ pet.name }}</h3>
+          <span class="badge badge-{{ pet.status }}">{{ pet.status }}</span>
+        </div>
+        <p style="color:#666;font-size:0.9rem">{{ pet.species }} · {{ pet.breed }}</p>
+        <p style="color:#888;font-size:0.85rem;margin-top:0.25rem">Age: {{ pet.age }}</p>
+        {% if pet.location %}
+        <p style="color:#888;font-size:0.85rem">📍 {{ pet.location }}</p>
+        {% endif %}
+      </div>
+    </a>
+    <div class="card-body" style="padding-top:0.25rem;border-top:1px solid #eee">
+      <p style="font-size:0.8rem;color:#888;margin-bottom:0.4rem">App #{{ app.id[:8] }}</p>
+      <a href="/applications/{{ app.id }}" class="btn btn-primary btn-sm" style="width:100%;text-align:center">📋 Track Status</a>
+    </div>
+  </div>
+  {% else %}
   <a href="/pets/{{ id }}" class="card" style="text-decoration:none;color:inherit">
-    <div class="pet-emoji">{{ emoji.get(pet.species, '🐾') }}</div>
+    <div style="text-align:center;padding:1rem;background:#f8f9fa">
+      <img src="/static/images/{{ images.get(pet.species, 'dog.svg') }}" alt="{{ pet.species }}" style="width:120px;height:120px">
+    </div>
     <div class="card-body">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
         <h3>{{ pet.name }}</h3>
@@ -16,11 +43,18 @@
       </div>
       <p style="color:#666;font-size:0.9rem">{{ pet.species }} · {{ pet.breed }}</p>
       <p style="color:#888;font-size:0.85rem;margin-top:0.25rem">Age: {{ pet.age }}</p>
+      {% if pet.location %}
+      <p style="color:#888;font-size:0.85rem">📍 {{ pet.location }}</p>
+      {% endif %}
+      {% if pet.listedDate %}
+      <p style="color:#aaa;font-size:0.8rem;margin-top:0.25rem">Listed {{ pet.listedDate }}</p>
+      {% endif %}
       {% if pet.description %}
       <p style="font-size:0.85rem;margin-top:0.5rem;color:#555">{{ pet.description[:80] }}{% if pet.description|length > 80 %}…{% endif %}</p>
       {% endif %}
     </div>
   </a>
+  {% endif %}
   {% endfor %}
 </div>
 {% else %}

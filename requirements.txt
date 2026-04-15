@@ -1,3 +1,5 @@
 flask==3.1.1
 flask-login==0.6.3
 azure-cosmos==4.9.0
+uvicorn==0.44.0
+python-dotenv==1.1.0

@@ -6,8 +6,8 @@
   <a href="/applications/{{ id }}" class="card" style="text-decoration:none;color:inherit;display:block;margin-bottom:1rem">
     <div class="card-body" style="display:flex;justify-content:space-between;align-items:center">
       <div>
-        <h3>{{ app.pet_name }}</h3>
-        <p style="color:#666;font-size:0.85rem">Submitted {{ app.submitted_at }}</p>
+        <h3>{{ app.petName }}</h3>
+        <p style="color:#666;font-size:0.85rem">Submitted {{ app.submittedAt }}</p>
       </div>
       <span class="badge badge-{{ 'available' if app.status == 'Approved' else 'pending' }}">
         {{ app.status }}

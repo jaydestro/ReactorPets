@@ -3,7 +3,7 @@
 <div class="card" style="max-width:650px;margin:0 auto">
   <div class="card-body">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-      <h2>Application for {{ application.pet_name }}</h2>
+      <h2>Application for {{ application.petName }}</h2>
       <span class="badge badge-{{ 'available' if application.status == 'Approved' else 'pending' }}" id="status-badge">
         {{ application.status }}
       </span>
